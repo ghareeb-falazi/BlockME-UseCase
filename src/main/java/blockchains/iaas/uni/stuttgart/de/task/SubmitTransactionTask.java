@@ -1,0 +1,50 @@
+package blockchains.iaas.uni.stuttgart.de.task;
+
+import blockchains.iaas.uni.stuttgart.de.config.Configuration;
+import blockchains.iaas.uni.stuttgart.de.request.SubmitTransactionRequest;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+
+import java.math.BigInteger;
+
+/********************************************************************************
+ * Copyright (c) 2018 Institute for the Architecture of Application System -
+ * University of Stuttgart
+ * Author: Ghareeb Falazi
+ *
+ * This program and the accompanying materials are made available under the
+ * terms the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+public class SubmitTransactionTask extends SubscriptionTask {
+    private final static long WAIT_FOR = 1L;
+
+    protected boolean hasErrorCallback() {
+        return true;
+    }
+
+    protected Object generateRequest(DelegateExecution execution, String correlationId) {
+        final SubmitTransactionRequest request = new SubmitTransactionRequest();
+        request.setBlockchainId(getTargetBlockchainId());
+        request.setEpUrl(getMessageEndPointUrl());
+        request.setSubscriptionId(correlationId);
+        request.setTo((String) execution.getVariable("targetAddress"));
+        request.setWaitFor(WAIT_FOR);
+        final double exchangeRate = Double.valueOf(Configuration.getInstance().properties.getProperty("exchange-rate"));
+        final long value = (long) (
+                (Long) execution.getVariable("value") * exchangeRate);
+        request.setValue(BigInteger.valueOf(value));
+        log.info("Sending " + value + " Bitcoins to " + request.getTo());
+
+        return request;
+    }
+
+    protected String getOperationName() {
+        return "submitTransaction";
+    }
+
+    protected String getBALOperationUrlSegment() {
+        return "submit-transaction";
+    }
+}

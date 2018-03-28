@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.11.3">
-  <bpmn:process id="Process_0e1kb6i" isExecutable="false">
-    <bpmn:startEvent id="StartEvent_0tx3gjs" name="Receive Exchange Request from Client">
-      <bpmn:outgoing>SequenceFlow_0riq67s</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
-    </bpmn:startEvent>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.11.3">
+  <bpmn:process id="exchange-crypto" name="Crypto-Exchange" isExecutable="true">
     <bpmn:parallelGateway id="ExclusiveGateway_1n76cly">
       <bpmn:incoming>SequenceFlow_12xddry</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_046jgsc</bpmn:outgoing>
@@ -31,13 +27,15 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="SequenceFlow_0ls68ga" sourceRef="ExclusiveGateway_1g1s3ry" targetRef="ExclusiveGateway_1kefkqh" />
     <bpmn:sequenceFlow id="SequenceFlow_0gqtaql" sourceRef="ExclusiveGateway_1kefkqh" targetRef="Task_0jietpc" />
-    <bpmn:sequenceFlow id="SequenceFlow_039m74s" name="exchangeAmount &#62;= X ethers" sourceRef="ExclusiveGateway_1g1s3ry" targetRef="Task_16021bz" />
+    <bpmn:sequenceFlow id="SequenceFlow_039m74s" name="exchangeAmount &#62;= 0.01 ethers" sourceRef="ExclusiveGateway_1g1s3ry" targetRef="Task_16021bz">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[${value >= 10000000000000000}]]></bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="SequenceFlow_0fezzv0" sourceRef="Task_16021bz" targetRef="ExclusiveGateway_1kefkqh" />
     <bpmn:sequenceFlow id="SequenceFlow_0reqi2f" sourceRef="Task_0jietpc" targetRef="ExclusiveGateway_1ozbigv" />
     <bpmn:sequenceFlow id="SequenceFlow_0hogwwr" sourceRef="ExclusiveGateway_1ozbigv" targetRef="EndEvent_0eoc5h0" />
     <bpmn:endEvent id="EndEvent_0eoc5h0" name="Reply Bitcoin TransactionID to Client">
       <bpmn:incoming>SequenceFlow_0hogwwr</bpmn:incoming>
-      <bpmn:messageEventDefinition />
+      <bpmn:messageEventDefinition camunda:class="blockchains.iaas.uni.stuttgart.de.task.ReportSuccessEvent" />
     </bpmn:endEvent>
     <bpmn:subProcess id="Task_05gcamw" name="Receive Transaction from Client">
       <bpmn:incoming>SequenceFlow_0riq67s</bpmn:incoming>
@@ -46,7 +44,7 @@
         <bpmn:outgoing>SequenceFlow_03latua</bpmn:outgoing>
       </bpmn:startEvent>
       <bpmn:sequenceFlow id="SequenceFlow_03latua" sourceRef="StartEvent_150tlk5" targetRef="Task_0kyv1zf" />
-      <bpmn:sendTask id="Task_0kyv1zf" name="Subscribe to BAL">
+      <bpmn:sendTask id="Task_0kyv1zf" name="Subscribe to BAL" camunda:class="blockchains.iaas.uni.stuttgart.de.task.ReceiveTransactionTask">
         <bpmn:incoming>SequenceFlow_03latua</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_1n5ozwj</bpmn:outgoing>
       </bpmn:sendTask>
@@ -55,27 +53,30 @@
         <bpmn:incoming>SequenceFlow_1obld3w</bpmn:incoming>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="SequenceFlow_1obld3w" sourceRef="Task_1sbgctk" targetRef="EndEvent_0092p6o" />
-      <bpmn:receiveTask id="Task_1sbgctk" name="Receive Transaction">
+      <bpmn:receiveTask id="Task_1sbgctk" name="Receive Transaction Details" messageRef="Message_1tf0ndk">
         <bpmn:incoming>SequenceFlow_1n5ozwj</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_1obld3w</bpmn:outgoing>
       </bpmn:receiveTask>
     </bpmn:subProcess>
     <bpmn:sequenceFlow id="SequenceFlow_04rkj24" sourceRef="Task_032c9qe" targetRef="ExclusiveGateway_1ozbigv" />
-    <bpmn:sendTask id="Task_032c9qe" name="&#10;&#10;Notify Client about received Transaction&#10;">
+    <bpmn:sendTask id="Task_032c9qe" name="&#10;&#10;Notify Client about received Transaction&#10;" camunda:class="blockchains.iaas.uni.stuttgart.de.task.ReportRequestAcceptedEvent">
       <bpmn:incoming>SequenceFlow_046jgsc</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_04rkj24</bpmn:outgoing>
     </bpmn:sendTask>
     <bpmn:subProcess id="Task_16021bz" name="Ensure Transaction">
+      <bpmn:extensionElements>
+        <camunda:executionListener expression="" event="start" />
+      </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_039m74s</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0fezzv0</bpmn:outgoing>
       <bpmn:startEvent id="StartEvent_0i26hit">
         <bpmn:outgoing>SequenceFlow_08x83k0</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:sendTask id="SendTask_1825w0b" name="Subscribe to BAL">
+      <bpmn:sendTask id="SendTask_1825w0b" name="Subscribe to BAL" camunda:class="blockchains.iaas.uni.stuttgart.de.task.EnsureTransactionTask">
         <bpmn:incoming>SequenceFlow_08x83k0</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_0171q3b</bpmn:outgoing>
       </bpmn:sendTask>
-      <bpmn:receiveTask id="ReceiveTask_14giea6" name="Receive Transaction Confirmation">
+      <bpmn:receiveTask id="ReceiveTask_14giea6" name="Receive Transaction Confirmation" messageRef="Message_14wfnwb">
         <bpmn:incoming>SequenceFlow_0171q3b</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_0pcw4uj</bpmn:outgoing>
       </bpmn:receiveTask>
@@ -88,7 +89,7 @@
     </bpmn:subProcess>
     <bpmn:boundaryEvent id="BoundaryEvent_0ff7k15" name="Transaction Invalidated" attachedToRef="Task_16021bz">
       <bpmn:outgoing>SequenceFlow_1ils3xt</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
+      <bpmn:messageEventDefinition messageRef="Message_0y51ziz" />
     </bpmn:boundaryEvent>
     <bpmn:subProcess id="Task_0jietpc" name="Submit Transaction to Bitcoin">
       <bpmn:incoming>SequenceFlow_0gqtaql</bpmn:incoming>
@@ -96,11 +97,11 @@
       <bpmn:startEvent id="StartEvent_1meml7j">
         <bpmn:outgoing>SequenceFlow_0la9j8h</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:sendTask id="SendTask_1kd8qdj" name="Subscribe to BAL">
+      <bpmn:sendTask id="SendTask_1kd8qdj" name="Subscribe to BAL" camunda:class="blockchains.iaas.uni.stuttgart.de.task.SubmitTransactionTask">
         <bpmn:incoming>SequenceFlow_0la9j8h</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_0opul4i</bpmn:outgoing>
       </bpmn:sendTask>
-      <bpmn:receiveTask id="ReceiveTask_1acn1g2" name="Receive Transaction State">
+      <bpmn:receiveTask id="ReceiveTask_1acn1g2" name="Receive Transaction Details" messageRef="Message_0h152n5">
         <bpmn:incoming>SequenceFlow_0opul4i</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_1d4uuty</bpmn:outgoing>
       </bpmn:receiveTask>
@@ -113,27 +114,29 @@
     </bpmn:subProcess>
     <bpmn:boundaryEvent id="BoundaryEvent_040uxcs" name="Bad Target Address" attachedToRef="Task_0jietpc">
       <bpmn:outgoing>SequenceFlow_1crfth1</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
+      <bpmn:messageEventDefinition messageRef="Message_0s1ll7j" />
     </bpmn:boundaryEvent>
     <bpmn:endEvent id="EndEvent_0y6lm62" name="Notify Client of Failed Transaction">
       <bpmn:incoming>SequenceFlow_1ils3xt</bpmn:incoming>
-      <bpmn:messageEventDefinition />
+      <bpmn:messageEventDefinition camunda:class="blockchains.iaas.uni.stuttgart.de.task.ReportFailedIncomingTransactionEvent" />
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_1ils3xt" sourceRef="BoundaryEvent_0ff7k15" targetRef="EndEvent_0y6lm62" />
     <bpmn:endEvent id="EndEvent_1w8r1y0" name="Notify Client of Bad Target Address">
       <bpmn:incoming>SequenceFlow_1crfth1</bpmn:incoming>
-      <bpmn:messageEventDefinition />
+      <bpmn:messageEventDefinition camunda:class="blockchains.iaas.uni.stuttgart.de.task.ReportFailedOutgoingTransactionEvent" />
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_1crfth1" sourceRef="BoundaryEvent_040uxcs" targetRef="EndEvent_1w8r1y0" />
+    <bpmn:startEvent id="StartEvent_0tx3gjs" name="Receive Exchange Request from Client" camunda:formKey="embedded:app:forms/request-exchange.html">
+      <bpmn:outgoing>SequenceFlow_0riq67s</bpmn:outgoing>
+    </bpmn:startEvent>
   </bpmn:process>
+  <bpmn:message id="Message_1tf0ndk" name="message_receiveTransaction_${execution.processInstanceId}" />
+  <bpmn:message id="Message_14wfnwb" name="message_ensureTransactionState_${execution.processInstanceId}" />
+  <bpmn:message id="Message_0y51ziz" name="error_ensureTransactionState_${execution.processInstanceId}" />
+  <bpmn:message id="Message_0h152n5" name="message_submitTransaction_${execution.processInstanceId}" />
+  <bpmn:message id="Message_0s1ll7j" name="error_submitTransaction_${execution.processInstanceId}" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0e1kb6i">
-      <bpmndi:BPMNShape id="StartEvent_18w4d17_di" bpmnElement="StartEvent_0tx3gjs">
-        <dc:Bounds x="52" y="230" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="38" y="270" width="66" height="48" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="exchange-crypto">
       <bpmndi:BPMNShape id="ParallelGateway_1j2rxjj_di" bpmnElement="ExclusiveGateway_1n76cly">
         <dc:Bounds x="607" y="223" width="50" height="50" />
         <bpmndi:BPMNLabel>
@@ -150,7 +153,7 @@
         <di:waypoint xsi:type="dc:Point" x="88" y="248" />
         <di:waypoint xsi:type="dc:Point" x="154" y="248" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="121" y="227" width="0" height="12" />
+          <dc:Bounds x="76" y="227" width="90" height="12" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_12xddry_di" bpmnElement="SequenceFlow_12xddry">
@@ -211,7 +214,7 @@
         <di:waypoint xsi:type="dc:Point" x="696" y="461" />
         <di:waypoint xsi:type="dc:Point" x="761" y="461" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="652.5084427767355" y="473.91632270168856" width="86" height="24" />
+          <dc:Bounds x="653" y="474" width="86" height="24" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0fezzv0_di" bpmnElement="SequenceFlow_0fezzv0">
@@ -422,6 +425,12 @@
           <dc:Bounds x="1556" y="521" width="0" height="12" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="StartEvent_0ullkng_di" bpmnElement="StartEvent_0tx3gjs">
+        <dc:Bounds x="52" y="230" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="38" y="270" width="66" height="48" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

@@ -16,9 +16,7 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
  ********************************************************************************/
 public class EnsureTransactionTask extends SubscriptionTask {
     private final static long WAIT_FOR = 12L;
-    protected boolean hasErrorCallback() {
-        return true;
-    }
+
 
     protected Object generateRequest(DelegateExecution execution, String correlationId) {
         final EnsureTransactionStateRequest request = new EnsureTransactionStateRequest();

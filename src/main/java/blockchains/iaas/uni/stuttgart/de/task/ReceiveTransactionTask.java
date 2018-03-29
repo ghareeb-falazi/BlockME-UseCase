@@ -17,9 +17,6 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 public class ReceiveTransactionTask extends SubscriptionTask {
     private static final long WAIT_FOR = 1L;
 
-    protected boolean hasErrorCallback() {
-        return false;
-    }
 
     protected Object generateRequest(DelegateExecution execution, String correlationId) {
         final ReceiveTransactionsRequest request = new ReceiveTransactionsRequest();

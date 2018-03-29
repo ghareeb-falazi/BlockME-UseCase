@@ -20,9 +20,6 @@ import java.math.BigInteger;
 public class SubmitTransactionTask extends SubscriptionTask {
     private final static long WAIT_FOR = 1L;
 
-    protected boolean hasErrorCallback() {
-        return true;
-    }
 
     protected Object generateRequest(DelegateExecution execution, String correlationId) {
         final SubmitTransactionRequest request = new SubmitTransactionRequest();
@@ -35,7 +32,8 @@ public class SubmitTransactionTask extends SubscriptionTask {
         final long value = (long) (
                 (Long) execution.getVariable("value") * exchangeRate);
         request.setValue(BigInteger.valueOf(value));
-        log.info("Sending " + value + " Bitcoins to " + request.getTo());
+        log.info("Exchange rate is: " + Configuration.getInstance().properties.getProperty("exchange-rate")
+                + ". Sending " + value + " satochis to " + request.getTo());
 
         return request;
     }

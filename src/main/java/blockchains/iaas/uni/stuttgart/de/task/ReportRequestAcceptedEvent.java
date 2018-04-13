@@ -15,6 +15,6 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
  ********************************************************************************/
 public class ReportRequestAcceptedEvent extends SimpleEchoTask {
     protected String getMessage(DelegateExecution execution) {
-        return "Your request to exchange: "+ execution.getVariable("value") + " weis for satochis has been received!";
+        return "Your request to exchange: "+ execution.getVariable("value") + " weis for satoshis has been received!";
     }
 }

@@ -32,8 +32,8 @@ public class SubmitTransactionTask extends SubscriptionTask {
         final long value = (long) (
                 (Long) execution.getVariable("value") * exchangeRate);
         request.setValue(BigInteger.valueOf(value));
-        log.info("Exchange rate is: " + Configuration.getInstance().properties.getProperty("exchange-rate")
-                + ". Sending " + value + " satochis to " + request.getTo());
+        log.info("Exchange rate (wei->satoshi) is: " + Configuration.getInstance().properties.getProperty("exchange-rate")
+                + ". Sending " + value + " satoshis to " + request.getTo());
 
         return request;
     }

@@ -25,7 +25,7 @@ public class ReceiveTransactionsRequest {
 
     private String subscriptionId;
 
-    private long waitFor;
+    private double requiredConfidence;
 
     private String epUrl;
 
@@ -68,14 +68,14 @@ public class ReceiveTransactionsRequest {
         this.subscriptionId = subscriptionId;
     }
 
-    @XmlElement(name="WaitFor")
-    public long getWaitFor() {
-        return waitFor;
+    @XmlElement(name="RequiredConfidence")
+    public double getRequiredConfidence() {
+        return requiredConfidence;
     }
 
 
-    public void setWaitFor(long waitFor) {
-        this.waitFor = waitFor;
+    public void setRequiredConfidence(double requiredConfidence) {
+        this.requiredConfidence = requiredConfidence;
     }
 
 

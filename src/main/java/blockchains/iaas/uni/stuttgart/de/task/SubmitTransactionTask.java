@@ -5,6 +5,7 @@ import blockchains.iaas.uni.stuttgart.de.request.SubmitTransactionRequest;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 
 import java.math.BigInteger;
+import java.nio.DoubleBuffer;
 
 /********************************************************************************
  * Copyright (c) 2018 Institute for the Architecture of Application System -
@@ -18,7 +19,7 @@ import java.math.BigInteger;
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 public class SubmitTransactionTask extends SubscriptionTask {
-    private final static long WAIT_FOR = 1L;
+    private final static double REQUIRED_CONFIDENCE = 50.0;
 
 
     protected Object generateRequest(DelegateExecution execution, String correlationId) {
@@ -27,7 +28,7 @@ public class SubmitTransactionTask extends SubscriptionTask {
         request.setEpUrl(getMessageEndPointUrl());
         request.setSubscriptionId(correlationId);
         request.setTo((String) execution.getVariable("targetAddress"));
-        request.setWaitFor(WAIT_FOR);
+        request.setRequiredConfidence(REQUIRED_CONFIDENCE);
         final double exchangeRate = Double.valueOf(Configuration.getInstance().properties.getProperty("exchange-rate"));
         final long value = (long) (
                 (Long) execution.getVariable("value") * exchangeRate);

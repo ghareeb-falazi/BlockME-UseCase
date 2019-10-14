@@ -15,7 +15,7 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 public class EnsureTransactionTask extends SubscriptionTask {
-    private final static long WAIT_FOR = 12L;
+    private final static double REQUIRED_CONFIDENCE = 99.976;
 
 
     protected Object generateRequest(DelegateExecution execution, String correlationId) {
@@ -24,7 +24,7 @@ public class EnsureTransactionTask extends SubscriptionTask {
         request.setEpUrl(getMessageEndPointUrl());
         request.setSubscriptionId(correlationId);
         request.setTxId((String)execution.getVariable("transactionId"));
-        request.setWaitFor(WAIT_FOR);
+        request.setRequiredConfidence(REQUIRED_CONFIDENCE);
         return request;
     }
 
